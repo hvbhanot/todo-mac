@@ -46,6 +46,41 @@ cat > "$APP/Contents/Info.plist" <<'EOF'
 </dict>
 </plist>
 EOF
+# The Today widget: its own sandboxed extension, allowed to read only the app's data folder.
+W="$APP/Contents/PlugIns/TodayWidget.appex"
+mkdir -p "$W/Contents/MacOS"
+swiftc -O -parse-as-library -application-extension -sdk "$SDK" -target "$(uname -m)-apple-macos15.0" TodayWidget.swift -o "$W/Contents/MacOS/TodayWidget"
+cat > "$W/Contents/Info.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>TodayWidget</string>
+  <key>CFBundleDisplayName</key><string>Todo</string>
+  <key>CFBundleIdentifier</key><string>local.todo.app.widget</string>
+  <key>CFBundleExecutable</key><string>TodayWidget</string>
+  <key>CFBundlePackageType</key><string>XPC!</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>LSMinimumSystemVersion</key><string>15.0</string>
+  <key>NSExtension</key><dict><key>NSExtensionPointIdentifier</key><string>com.apple.widgetkit-extension</string></dict>
+</dict>
+</plist>
+EOF
+ENT=$(mktemp)
+cat > "$ENT" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.app-sandbox</key><true/>
+  <key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
+  <array><string>/Library/Application Support/Todo/</string></array>
+</dict>
+</plist>
+EOF
+codesign --force --sign - --entitlements "$ENT" "$W"
+rm "$ENT"
 codesign --force --sign - "$APP"
 echo "Built $(pwd)/$APP"
 

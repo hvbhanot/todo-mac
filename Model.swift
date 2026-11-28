@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import WidgetKit
 
 let palette: [Color] = [.blue, .red, .orange, .green, .teal, .purple, .pink, .gray]
 let paletteNames = ["Blue", "Red", "Orange", "Green", "Teal", "Purple", "Pink", "Gray"]
@@ -311,6 +312,7 @@ func parseQuick(_ input: String, lists: [String]) -> QuickParse {
     private func save() {
         do { try JSONEncoder().encode(Saved(items: items, lists: lists, colors: colors)).write(to: url, options: .atomic) }
         catch { NSLog("Todo: save failed: \(error)") }
+        if url == Store.defaultURL { WidgetCenter.shared.reloadAllTimelines() }
         refreshBadge()
         scheduleBriefings()
     }

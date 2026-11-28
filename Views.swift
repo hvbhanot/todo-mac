@@ -440,6 +440,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     // Keep running in the menu bar after the window closes; Quit Todo (or Cmd-Q) ends it.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
+    // Clicking the widget, or opening Todo from Spotlight or Launchpad while it runs in the background.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        if !hasVisibleWindows { Store.shared.showMain() }
+        return true
+    }
+
     // Show banners even while the app is in front.
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
