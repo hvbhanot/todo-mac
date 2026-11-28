@@ -49,7 +49,9 @@ EOF
 # The Today widget: its own sandboxed extension, allowed to read only the app's data folder.
 W="$APP/Contents/PlugIns/TodayWidget.appex"
 mkdir -p "$W/Contents/MacOS"
-swiftc -O -parse-as-library -application-extension -sdk "$SDK" -target "$(uname -m)-apple-macos15.0" TodayWidget.swift -o "$W/Contents/MacOS/TodayWidget"
+# Extensions must start in _NSExtensionMain (as Xcode links them), or ExtensionFoundation traps at launch.
+swiftc -O -parse-as-library -application-extension -sdk "$SDK" -target "$(uname -m)-apple-macos15.0" \
+  -Xlinker -e -Xlinker _NSExtensionMain TodayWidget.swift -o "$W/Contents/MacOS/TodayWidget"
 cat > "$W/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
